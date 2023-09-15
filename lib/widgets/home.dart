@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:movies_app_sept23/models/movie_search.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -87,5 +90,30 @@ class _HomePageState extends State<HomePage> {
           ],
         )
     );
+  }
+  // This is a method that's going to work asynchronous - Future
+  // <DataType> => Datatype returned by the API and the transformation
+  // If it is an array, It's going to be List<ClassName>
+  // If it is an object, It's going to be <ClassName>
+  // Import movie_search on top
+  Future<List<MovieSearch>> fetchMovies() async {
+    // import http modules.
+    // change the URL
+    final response = await http
+        .get(Uri.parse('https://www.omdbapi.com/?s=Lord&apikey=87d10179'));
+
+    if (response.statusCode == 200) {
+      // If the server did return a 200 OK response,
+      // then parse the JSON.
+
+      // If it is an array, call the fifth method from the class : moviesFromJson
+      // If it is an object, call the forth method : fromJson
+      // jsonDecode needs dart:convert import to work
+      return MovieSearch.moviesFromJson(jsonDecode(response.body));
+    } else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      throw Exception('Failed to load movies');
+    }
   }
 }
