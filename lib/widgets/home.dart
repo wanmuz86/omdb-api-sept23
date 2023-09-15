@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:movies_app_sept23/models/movie_search.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'detail.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -53,6 +54,7 @@ class _HomePageState extends State<HomePage> {
     //       "https://m.media-amazon.com/images/M/MV5BMTYzZWE3MDAtZjZkMi00MzhlLTlhZDUtNmI2Zjg3OWVlZWI0XkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_SX300.jpg"
     // }
   ];
+  var searchEditingController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,7 +70,10 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Expanded(
                       flex: 2,
-                      child: TextField(decoration: InputDecoration(hintText: "Enter movie "),)),
+                      child: TextField(
+                        controller: searchEditingController,
+                        decoration:
+                      InputDecoration(hintText: "Enter movie "),)),
                   Expanded(
                       flex:1,
                       child: TextButton(onPressed: (){
@@ -76,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                         // Call it using async await
                         // Or you can use (then)
 
-                       fetchMovies().then((value) => {
+                       fetchMovies(searchEditingController.text).then((value) => {
                          setState((){
                            _movies = value;
                          })
@@ -95,7 +100,14 @@ class _HomePageState extends State<HomePage> {
                       title: Text(_movies[index].title),
                       subtitle: Text(_movies[index].year),
                       trailing: Icon(Icons.chevron_right),
-                      leading: Image.network(_movies[index].poster),
+                      leading: _movies[index].poster != "N/A" ?
+                      Image.network(_movies[index].poster) : SizedBox(),
+                      onTap: (){
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context)=>DetailPage(imdbId: _movies[index].imdbId,))
+                        );
+                      },
                     );
                   }),
             )
@@ -108,11 +120,11 @@ class _HomePageState extends State<HomePage> {
   // If it is an array, It's going to be List<ClassName>
   // If it is an object, It's going to be <ClassName>
   // Import movie_search on top
-  Future<List<MovieSearch>> fetchMovies() async {
+  Future<List<MovieSearch>> fetchMovies(searchText) async {
     // import http modules.
     // change the URL
     final response = await http
-        .get(Uri.parse('https://www.omdbapi.com/?s=Lord&apikey=87d10179'));
+        .get(Uri.parse('https://www.omdbapi.com/?s=$searchText&apikey=87d10179'));
 
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
